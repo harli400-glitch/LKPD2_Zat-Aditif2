@@ -393,7 +393,8 @@
         // Inisialisasi Kuis saat halaman dimuat
         document.addEventListener('DOMContentLoaded', () => {
             renderQuiz();
-            // Pengecekan local storage dihapus agar perangkat yang sama bisa dipakai lagi
+            // Hapus jejak pengiriman lama di browser jika ada
+            localStorage.removeItem('eduAditif_submitted');
         });
 
         // Tab Switching
@@ -444,12 +445,7 @@
                     `;
                 }
                 
-                // Elemen Kunci Jawaban (Disembunyikan pada awalnya, muncul setelah submit)
                 html += `
-                        </div>
-                        <div id="key-${q.id}" class="hidden mt-4 p-4 bg-green-50 border-l-4 border-green-500 rounded-r-lg">
-                            <p class="text-sm text-green-800 font-bold mb-1"><i class="fas fa-key mr-1"></i> Kunci Jawaban Ideal:</p>
-                            <p class="text-sm text-green-700 leading-relaxed">${q.type === 'essay' ? q.hiddenAnswer : q.answer}</p>
                         </div>
                     </div>
                 `;
@@ -461,24 +457,36 @@
         async function submitForm(event) {
             event.preventDefault();
             
-            // Validasi Local Storage dihapus. Langsung masuk ke pengecekan nama & kelas.
             const nama = document.getElementById('nama').value.trim();
-            const kelas = document.getElementById('kelas').value;
+            const kelas = document.getElementById('kelas').value.trim();
 
             if(!nama || !kelas) {
                 Swal.fire('Peringatan', 'Harap isi nama dan pilih kelas dengan benar.', 'warning');
                 return;
             }
 
-            // 2. Validasi perlindungan (Dari data server yang sudah diambil)
-            const isDuplicate = allSubmissions.some(sub => sub.nama && sub.nama.toLowerCase() === nama.toLowerCase() && sub.kelas === kelas);
+            setLoadingState(true);
+
+            // 1. Pastikan data terbaru dari server terambil jika allSubmissions masih kosong
+            if (!allSubmissions || allSubmissions.length === 0) {
+                await fetchDataNilai(true);
+            }
+
+            // 2. Validasi Duplikat Nama dan Kelas
+            const isDuplicate = allSubmissions.some(sub => {
+                const subNama = (sub.nama || sub.Nama || sub['Nama Lengkap'] || sub['nama siswa'] || '').toString().trim().toLowerCase();
+                const subKelas = (sub.kelas || sub.Kelas || '').toString().trim().toLowerCase();
+                
+                return subNama === nama.toLowerCase() && subKelas === kelas.toLowerCase();
+            });
+
             if(isDuplicate) {
-                Swal.fire('Ditolak!', `Siswa bernama ${nama} di ${kelas} sudah tercatat mengirimkan formulir. Pengiriman ganda tidak diizinkan.`, 'error');
+                setLoadingState(false);
+                Swal.fire('Ditolak!', `Siswa bernama "${nama}" dari "${kelas}" sudah pernah mengirimkan formulir.`, 'error');
                 return;
             }
-            // ... (kode berlanjut ke kalkulasi nilai)
 
-            // 3. Kalkulasi Nilai Otomatis (MCQ & Deteksi Keyword Esai)
+            // 3. Kalkulasi Nilai
             let earnedPoints = 0;
             const maxPoints = quizData.length;
 
@@ -486,31 +494,24 @@
                 if (!q.type || q.type === 'mcq') {
                     const selected = document.querySelector(`input[name="${q.id}"]:checked`);
                     if(selected && selected.value === q.answer) {
-                        earnedPoints += 1; // Poin penuh pilihan ganda
+                        earnedPoints += 1;
                     }
                 } else if (q.type === 'essay') {
-                    const answerText = document.getElementById(q.id).value.toLowerCase();
+                    const answerText = (document.getElementById(q.id)?.value || '').toLowerCase();
                     let matchCount = 0;
                     q.keywords.forEach(kw => {
                         if(answerText.includes(kw.toLowerCase())) matchCount++;
                     });
                     
                     if (matchCount >= q.minKeywords) {
-                        earnedPoints += 1; // Poin penuh esai
+                        earnedPoints += 1;
                     } else if (matchCount > 0) {
-                        earnedPoints += 0.5; // Poin setengah jika hanya menyebutkan sebagian/satu
+                        earnedPoints += 0.5;
                     }
                 }
-                
-                // Tampilkan Kunci Jawaban setelah murid submit
-                const keyElement = document.getElementById(`key-${q.id}`);
-                if(keyElement) keyElement.classList.remove('hidden');
             });
 
-            // Skala 0 - 100
             const nilai = Math.round((earnedPoints / maxPoints) * 100);
-
-            setLoadingState(true);
 
             const payload = {
                 id: "ID-" + Date.now(),
@@ -519,12 +520,11 @@
                 timestamp: new Date().toISOString(),
                 score: nilai,
                 chainDetails: "Mengerjakan Kuis Evaluasi Zat Aditif Bagian 2",
-                targetSheet: "LKPD2_Zat Aditif" // <--- TAMBAHKAN BARIS INI (Jangan lupa koma di baris sebelumnya)
+                targetSheet: "LKPD2_Zat Aditif"
             };
 
             try {
-                // Gunakan text/plain untuk mengirim JSON demi menghindari pemblokiran CORS Preflight (OPTIONS) di GAS
-                const response = await fetch(APPS_SCRIPT_URL, {
+                await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'text/plain;charset=utf-8',
@@ -532,30 +532,20 @@
                     body: JSON.stringify(payload)
                 });
 
-                // Sukses
-               Swal.fire({
+                allSubmissions.push(payload);
+                filterAndSortTable();
+
+                await Swal.fire({
                     title: 'Berhasil!',
                     text: `Jawaban berhasil dikirim. Nilai Anda: ${nilai}`,
                     icon: 'success',
                     confirmButtonColor: '#FF7F50'
                 });
                 
-                // Tambahkan langsung ke data lokal agar tabel langsung update
-                allSubmissions.push(payload);
-                filterAndSortTable();
-
-                // Reset formulir untuk siswa berikutnya
                 document.getElementById('quizForm').reset();
-                
-                // Sembunyikan kembali kunci jawaban
-                quizData.forEach(q => {
-                    const keyElement = document.getElementById(`key-${q.id}`);
-                    if(keyElement) keyElement.classList.add('hidden');
-                });
 
             } catch (error) {
                 console.error('Error saat submit:', error);
-                // Jika terjadi CORS error/network issue tapi data sebenarnya masuk
                 Swal.fire('Informasi', 'Permintaan terkirim, namun sistem mendeteksi kendala koneksi. Cek di daftar nilai secara berkala.', 'info');
             } finally {
                 setLoadingState(false);
