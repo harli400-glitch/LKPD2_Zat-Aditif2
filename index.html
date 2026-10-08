@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMS - Zat Aditif (Bagian 2)</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#FF7F50', // Coral
+                        secondary: '#4ade80', // Green 400
+                        accent: '#fde047', // Yellow 300
+                        light: '#fff7ed', // Orange 50
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #fff7ed; }
+        .tab-active { border-bottom-width: 4px; border-color: #FF7F50; color: #FF7F50; font-weight: 600; }
+        .tab-inactive { color: #6b7280; }
+        .tab-inactive:hover { color: #FF7F50; }
+        
+        /* Custom scrollbar for tables */
+        .table-container::-webkit-scrollbar { height: 8px; }
+        .table-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .table-container::-webkit-scrollbar-thumb { background: #FF7F50; border-radius: 4px; }
+        
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #FF7F50;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="text-gray-800 antialiased font-sans flex flex-col min-h-screen">
+
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <div class="bg-primary text-white p-2 rounded-lg">
+                        <i class="fas fa-flask text-xl"></i>
+                    </div>
+                    <span class="font-bold text-xl text-primary">EduAditif</span>
+                </div>
+                <div class="flex space-x-4">
+                    <button id="btnTabMateri" onclick="switchTab('materi')" class="tab-active px-3 py-4 transition duration-300">
+                        <i class="fas fa-book-open mr-1"></i> Materi & Kuis
+                    </button>
+                    <button id="btnTabNilai" onclick="switchTab('nilai')" class="tab-inactive px-3 py-4 transition duration-300">
+                        <i class="fas fa-chart-bar mr-1"></i> Daftar Nilai
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow w-full max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <div id="viewMateri" class="block space-y-8">
+            
+            <!-- Banner -->
+            <div class="bg-gradient-to-r from-primary to-yellow-400 rounded-2xl p-8 text-white shadow-lg relative overflow-hidden">
+                <div class="relative z-10">
+                    <h1 class="text-3xl sm:text-4xl font-bold mb-2">Zat Aditif pada Makanan</h1>
+                    <p class="text-lg opacity-90">Bagian 2: Pemanis dan Pewarna</p>
+                </div>
+                <i class="fas fa-candy-cane absolute -bottom-4 -right-4 text-8xl text-white opacity-20 transform -rotate-12"></i>
+            </div>
+
+            <!-- Konten Materi -->
+            <div class="bg-white rounded-2xl shadow-md p-6 sm:p-10 text-justify leading-relaxed">
+                <h2 class="text-2xl font-bold text-primary mb-6 border-b-2 border-accent inline-block pb-2">1. Jenis-Jenis Zat Aditif</h2>
+                
+                <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-3 flex items-center">
+                    <span class="bg-secondary text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm">a</span> 
+                    Pemanis
+                </h3>
+                <p class="mb-4">
+                    Pemanis adalah senyawa kimia untuk menambah rasa manis. Kita sering menambahkan gula pasir dalam minuman teh maupun kopi. Gula pasir yang berasal dari tebu disebut juga dengan sukrosa. Bahan tambahan ini merupakan salah satu contoh zat pemanis alami. Madu, gula jagung, dan gula aren juga termasuk zat pemanis alami.
+                </p>
+                <p class="mb-4">
+                    Konsumsi sukrosa bagi manusia dianjurkan untuk tidak melebihi dua sendok makan per hari atau setara dengan 30 gram. Jika berlebihan, sukrosa dapat menyebabkan penyakit diabetes mellitus, obesitas, ataupun gangguan pada jantung dan pembuluh darah atau kardiovaskular. Oleh karena itu, beberapa produk makanan dan minuman menggunakan pemanis lain sebagai pengganti sukrosa.
+                </p>
+                <p class="mb-6">
+                    Pemanis buatan yang sering digunakan sebagai alternatif gula adalah sorbitol. Selain itu, contoh pemanis buatan yang dikenal luas antara lain sakarin, aspartam, sukralosa, asesulfam K, dan siklamat. Sakarin dan sukralosa dianggap aman untuk dikonsumsi sampai dengan batas tertentu. Aspartam dapat menimbulkan beberapa efek kontroversial, di antaranya efek buruk pada bayi selama kehamilan. Asesulfam K telah terbukti menyebabkan alergi pada manusia bila melebihi dosis 15 mg asesulfam/kg berat badan. Contoh-contoh makanan yang biasanya menggunakan zat pemanis buatan adalah arum manis, minuman bersoda, permen karet, permen, makanan kaleng, dan sebagainya.
+                </p>
+
+                <!-- Tabel 2.1 -->
+                <div class="mb-8">
+                    <p class="text-sm font-semibold text-center mb-2 text-gray-600">Tabel 2.1 Contoh-contoh Pemanis Sintetis dan Tingkat Kemanisan (Dibandingkan dengan Gula Pasir dengan Tingkat Kemanisan 1) serta Batas Konsumsi</p>
+                    <div class="table-container overflow-x-auto rounded-lg shadow border border-gray-200">
+                        <table class="w-full text-sm text-left text-gray-500">
+                            <thead class="text-xs text-white uppercase bg-secondary">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">Jenis gula sintetis</th>
+                                    <th scope="col" class="px-6 py-3">Tingkat kemanisan</th>
+                                    <th scope="col" class="px-6 py-3">Batas konsumsi per hari</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="bg-white border-b hover:bg-gray-50">
+                                    <td class="px-6 py-4 font-medium text-gray-900">Sorbitol</td>
+                                    <td class="px-6 py-4">0,5–0,6</td>
+                                    <td class="px-6 py-4">23 g/kg berat badan</td>
+                                </tr>
+                                <tr class="bg-gray-50 border-b hover:bg-gray-100">
+                                    <td class="px-6 py-4 font-medium text-gray-900">Aspartam</td>
+                                    <td class="px-6 py-4">120–220</td>
+                                    <td class="px-6 py-4">50 mg/kg berat badan</td>
+                                </tr>
+                                <tr class="bg-white border-b hover:bg-gray-50">
+                                    <td class="px-6 py-4 font-medium text-gray-900">Siklamat</td>
+                                    <td class="px-6 py-4">20–40</td>
+                                    <td class="px-6 py-4">11 mg/kg berat badan</td>
+                                </tr>
+                                <tr class="bg-gray-50 border-b hover:bg-gray-100">
+                                    <td class="px-6 py-4 font-medium text-gray-900">Sakarin</td>
+                                    <td class="px-6 py-4">200–700</td>
+                                    <td class="px-6 py-4">5 mg/kg berat badan</td>
+                                </tr>
+                                <tr class="bg-white border-b hover:bg-gray-50">
+                                    <td class="px-6 py-4 font-medium text-gray-900">Asesulfam-K</td>
+                                    <td class="px-6 py-4">130–200</td>
+                                    <td class="px-6 py-4">15 mg/kg berat badan</td>
+                                </tr>
+                                <tr class="bg-gray-50">
+                                    <td class="px-6 py-4 font-medium text-gray-900">Sukralosa</td>
+                                    <td class="px-6 py-4">400–800</td>
+                                    <td class="px-6 py-4">5 mg/kg berat badan</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-700 mt-8 mb-3 flex items-center">
+                    <span class="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm">b</span> 
+                    Pewarna
+                </h3>
+                <p class="mb-4">
+                    Penggunaan pewarna makanan dapat membuat makanan terlihat lebih menarik sehingga menggugah selera makan. Pewarna juga dapat mengembalikan warna asli bahan makanan yang hilang saat pengolahan atau masa simpan.
+                </p>
+                
+                <div class="bg-light p-5 rounded-xl border border-orange-200 mb-6 flex flex-col items-center text-center space-y-4 shadow-inner">
+                    <p class="font-semibold text-gray-800 text-left w-full"><i class="fas fa-search-plus text-primary mr-2"></i>Coba perhatikan makanan-makanan khas Indonesia berikut ini. Kemudian identifikasilah zat aditif pewarna yang digunakan.</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-2 gap-4 w-full max-w-2xl">
+                        <div class="relative group">
+                            <img src="https://placehold.co/400x300/fff3e0/ff7f50?text=Nasi+Kuning" alt="Nasi Kuning" class="rounded-xl shadow-md w-full h-auto object-cover border-2 border-white group-hover:scale-105 transition duration-300">
+                        </div>
+                        <div class="relative group">
+                            <img src="https://placehold.co/400x300/fff3e0/ff7f50?text=Ikan+Bumbu+Merah" alt="Ikan Bumbu Merah" class="rounded-xl shadow-md w-full h-auto object-cover border-2 border-white group-hover:scale-105 transition duration-300">
+                        </div>
+                        <div class="relative group">
+                            <img src="https://placehold.co/400x300/fff3e0/ff7f50?text=Dadar+Gulung" alt="Dadar Gulung" class="rounded-xl shadow-md w-full h-auto object-cover border-2 border-white group-hover:scale-105 transition duration-300">
+                        </div>
+                        <div class="relative group">
+                            <img src="https://placehold.co/400x300/fff3e0/ff7f50?text=Kue+Klepon" alt="Kue Klepon" class="rounded-xl shadow-md w-full h-auto object-cover border-2 border-white group-hover:scale-105 transition duration-300">
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-500 font-medium italic mt-2">Gambar 2.4 Makanan khas Indonesia yang Menggunakan Pewarna Alami.</p>
+                </div>
+
+                <p class="mb-6">
+                    Pewarna buatan sering dipilih karena penggunaannya lebih mudah diperoleh dan lebih praktis. Misalnya apabila tidak memiliki tanaman daun pandan, kita dapat menggunakan pewarna makanan hijau untuk membuat dadar gulung. Demikian pula untuk mendapatkan kunyit yang siap digunakan sebagai pewarna perlu proses yang cukup panjang, mulai dari mengupas kulitnya kemudian digerus. Sementara jika menggunakan pewarna sintetis bewarna kuning, kita cukup membeli dan mencampurkannya dengan bahan makanan, praktis bukan? Selain itu, penggunaan pewarna sintesis juga membuat warna lebih tajam, terang, lebih banyak pilihan warna, dan warna tetap bertahan dalam proses pengolahan makanan. Contoh-contoh makanan yang menggunakan pewarna buatan adalah gulali atau arum manis, saus, permen, minuman berkarbonat, es krim, kue, biskuit, dan sebagainya. 
+                </p>
+                <p class="mb-6">
+                    Namun, efek samping dari penggunaan pewarna makanan perlu diperhatikan. Misalnya pewarna tartrazin dapat menyebabkan kita jadi cepat marah, gelisah, dan juga gangguan tidur pada anak-anak. Berikut ini contoh-contoh pewarna makanan buatan yang diperbolehkan dalam jumlah tertentu (Tabel 2.2). 
+                </p>
+
+                <!-- Tabel 2.2 -->
+                <div class="mb-8">
+                    <p class="text-sm font-semibold text-center mb-2 text-gray-600">Tabel 2.2 Contoh-Contoh Zat Pewarna Buatan yang Diperbolehkan<br>(Berdasarkan Peraturan Menteri Kesehatan RI No. 033 Tahun 2012)</p>
+                    <div class="table-container overflow-x-auto rounded-lg shadow border border-gray-200">
+                        <table class="w-full text-sm text-left text-gray-500">
+                            <thead class="text-xs text-white uppercase bg-primary">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">Nama zat pewarna</th>
+                                    <th scope="col" class="px-6 py-3">Warna yang dihasilkan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="bg-white border-b"><td class="px-6 py-3 font-medium text-gray-900">Tartrazin</td><td class="px-6 py-3">Kuning</td></tr>
+                                <tr class="bg-gray-50 border-b"><td class="px-6 py-3 font-medium text-gray-900">Kuning Kuinolin</td><td class="px-6 py-3">Kuning</td></tr>
+                                <tr class="bg-white border-b"><td class="px-6 py-3 font-medium text-gray-900">Sunset Yellow FCF atau Kuning FCF</td><td class="px-6 py-3">Oranye</td></tr>
+                                <tr class="bg-gray-50 border-b"><td class="px-6 py-3 font-medium text-gray-900">Allura red</td><td class="px-6 py-3">Merah kekuningan</td></tr>
+                                <tr class="bg-white border-b"><td class="px-6 py-3 font-medium text-gray-900">Ponceau 4R</td><td class="px-6 py-3">Merah</td></tr>
+                                <tr class="bg-gray-50 border-b"><td class="px-6 py-3 font-medium text-gray-900">Eritrosin</td><td class="px-6 py-3">Merah</td></tr>
+                                <tr class="bg-white border-b"><td class="px-6 py-3 font-medium text-gray-900">Karmoisin</td><td class="px-6 py-3">Merah</td></tr>
+                                <tr class="bg-gray-50 border-b"><td class="px-6 py-3 font-medium text-gray-900">Amaranth</td><td class="px-6 py-3">Merah kebiruan</td></tr>
+                                <tr class="bg-white border-b"><td class="px-6 py-3 font-medium text-gray-900">Indigotin</td><td class="px-6 py-3">Biru kemerahan</td></tr>
+                                <tr class="bg-gray-50 border-b"><td class="px-6 py-3 font-medium text-gray-900">Biru berlian</td><td class="px-6 py-3">Biru</td></tr>
+                                <tr class="bg-white border-b"><td class="px-6 py-3 font-medium text-gray-900">Briliant black BN</td><td class="px-6 py-3">Ungu</td></tr>
+                                <tr class="bg-gray-50 border-b"><td class="px-6 py-3 font-medium text-gray-900">Brown HT</td><td class="px-6 py-3">Coklat</td></tr>
+                                <tr class="bg-white"><td class="px-6 py-3 font-medium text-gray-900">Fast green FCF</td><td class="px-6 py-3">Hijau</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg mt-6">
+                    <p class="text-red-700 font-semibold mb-1"><i class="fas fa-exclamation-triangle mr-2"></i>Peringatan Bahaya</p>
+                    <p class="text-sm text-red-600">
+                        Zat pewarna sintesis yang membahayakan manusia sehingga telah dilarang penggunaannya oleh pemerintah antara lain <strong>Rhodamin B</strong> (warna merah kebiruan), <strong>Ponceau 3R</strong> (warna merah), dan <strong>Methanyl yellow</strong> (warna kuning). Bahan-bahan tersebut sebenarnya adalah pewarna bahan pakaian/tekstil, cat, dan kertas yang dapat menyebabkan kerusakan pada hati dan kanker (karsinogenik).
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-md p-6 sm:p-10 border-t-8 border-accent">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800">Aktivitas & Evaluasi Mandiri</h2>
+                    <p class="text-gray-500 text-sm mt-2">Kerjakan soal di bawah ini dengan teliti berdasarkan materi di atas. Pengiriman hanya dapat dilakukan satu kali.</p>
+                </div>
+
+                <form id="quizForm" onsubmit="submitForm(event)">
+                    <!-- Identitas -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 bg-gray-50 p-6 rounded-xl border border-gray-200">
+                        <div>
+                            <label for="nama" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap Siswa</label>
+                            <input type="text" id="nama" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition" placeholder="Masukkan nama lengkap">
+                        </div>
+                        <div>
+                            <label for="kelas" class="block text-sm font-medium text-gray-700 mb-1">Kelas</label>
+                            <select id="kelas" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition bg-white">
+                                <option value="" disabled selected>-- Pilih Kelas --</option>
+                                <option value="Kelas IX 10">Kelas IX 10</option>
+                                <option value="Kelas IX 11">Kelas IX 11</option>
+                                <option value="Kelas IX 12">Kelas IX 12</option>
+                                <option value="Kelas IX 13">Kelas IX 13</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Soal Kuis (Akan dirender via JS) -->
+                    <div id="quizContainer" class="space-y-6 mb-8">
+                        <!-- Questions injected here -->
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button type="submit" id="submitBtn" class="bg-primary hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg transform transition hover:-translate-y-1 flex items-center">
+                            <span id="btnText">Kirim Jawaban</span>
+                            <i id="btnIcon" class="fas fa-paper-plane ml-2"></i>
+                            <div id="btnLoader" class="loader ml-2 border-white border-t-transparent w-5 h-5 hidden"></div>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="viewNilai" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-md p-6 sm:p-8">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
+                    <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-list-ol text-primary mr-2"></i>Daftar Nilai Siswa</h2>
+                    <button onclick="downloadExcel()" class="bg-secondary hover:bg-green-500 text-white font-semibold py-2 px-4 rounded-lg shadow transition flex items-center">
+                        <i class="fas fa-file-excel mr-2"></i> Download Excel
+                    </button>
+                </div>
+
+                <!-- Filters -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 bg-gray-50 p-4 rounded-xl">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        <input type="text" id="searchInput" oninput="filterAndSortTable()" placeholder="Cari nama..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none">
+                    </div>
+                    <div>
+                        <select id="filterKelas" onchange="filterAndSortTable()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white">
+                            <option value="all">Semua Kelas</option>
+                            <option value="Kelas IX 10">Kelas IX 10</option>
+                            <option value="Kelas IX 11">Kelas IX 11</option>
+                            <option value="Kelas IX 12">Kelas IX 12</option>
+                            <option value="Kelas IX 13">Kelas IX 13</option>
+                        </select>
+                    </div>
+                    <div>
+                        <select id="sortOption" onchange="filterAndSortTable()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white">
+                            <option value="terbaru">Terbaru</option>
+                            <option value="nilai_tertinggi">Nilai Tertinggi</option>
+                            <option value="abjad_az">Abjad (A-Z)</option>
+                            <option value="abjad_za">Abjad (Z-A)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="table-container overflow-x-auto rounded-lg border border-gray-200 relative min-h-[200px]">
+                    <div id="tableLoader" class="absolute inset-0 bg-white/80 flex justify-center items-center z-10 hidden">
+                        <div class="loader"></div>
+                    </div>
+                    <table class="w-full text-sm text-left text-gray-500" id="nilaiTable">
+                        <thead class="text-xs text-white uppercase bg-gray-700">
+                            <tr>
+                                <th scope="col" class="px-6 py-4 rounded-tl-lg">No</th>
+                                <th scope="col" class="px-6 py-4">Nama Siswa</th>
+                                <th scope="col" class="px-6 py-4">Kelas</th>
+                                <th scope="col" class="px-6 py-4 text-center">Nilai</th>
+                                <th scope="col" class="px-6 py-4 rounded-tr-lg">Waktu Pengiriman</th>
+                            </tr>
+                        </thead>
+                        <tbody id="nilaiTableBody">
+                            <!-- Rows akan dirender via JS -->
+                        </tbody>
+                    </table>
+                    <div id="emptyState" class="hidden text-center py-10 text-gray-500">
+                        <i class="fas fa-folder-open text-4xl mb-3 text-gray-300"></i>
+                        <p>Belum ada data atau data tidak ditemukan.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white text-center py-4 mt-auto">
+        <p class="text-sm opacity-75">© 2026 EduAditif - Pembelajaran IPA Interaktif</p>
+    </footer>
+
+    <script>
+        // Konfigurasi API
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxkr5rTM6mhLvBHN-Px7FpIpFGfcMv6Hy2TEBtBkDYZtN8bOwhi7Tp9PbAPnjbGjMYjxQ/exec";
+        
+        // Data Soal (Berdasarkan teks materi)
+        const quizData = [
+            {
+                id: "q1",
+                question: "Batas konsumsi harian sukrosa (gula pasir) yang dianjurkan agar tidak berlebihan dan mencegah diabetes mellitus adalah...",
+                options: ["10 gram (satu sendok teh)", "30 gram (dua sendok makan)", "50 gram (lima sendok makan)", "Tidak ada batasan"],
+                answer: "30 gram (dua sendok makan)"
+            },
+            {
+                id: "q2",
+                question: "Berdasarkan Tabel 2.1, zat pemanis buatan yang penggunaannya dapat menimbulkan efek kontroversial terutama bagi wanita hamil adalah...",
+                options: ["Sorbitol", "Siklamat", "Aspartam", "Sukralosa"],
+                answer: "Aspartam"
+            },
+            {
+                id: "q3",
+                question: "Sesuai Tabel 2.1, berapa batas konsumsi maksimal per hari untuk Asesulfam-K?",
+                options: ["5 mg/kg berat badan", "11 mg/kg berat badan", "15 mg/kg berat badan", "23 g/kg berat badan"],
+                answer: "15 mg/kg berat badan"
+            },
+            {
+                id: "q4",
+                question: "Zat pewarna buatan/sintetis sering dipilih karena praktis. Namun, pewarna tartrazin memiliki efek samping, yaitu...",
+                options: ["Menyebabkan kantuk berlebihan", "Menyebabkan cepat marah, gelisah, dan gangguan tidur anak", "Meningkatkan nafsu makan drastis", "Memperkuat tulang dan gigi"],
+                answer: "Menyebabkan cepat marah, gelisah, dan gangguan tidur anak"
+            },
+            {
+                id: "q5",
+                question: "Zat pewarna tekstil yang dilarang penggunaannya untuk makanan karena dapat menyebabkan kerusakan hati dan kanker (warna merah kebiruan) adalah...",
+                options: ["Allura red", "Fast green FCF", "Ponceau 4R", "Rhodamin B"],
+                answer: "Rhodamin B"
+            },
+            {
+                id: "q6",
+                type: "essay",
+                question: "Aktivitas: Tuliskan contoh-contoh bahan alami dan buatan dari zat aditif (pemanis & pewarna) berdasarkan materi di atas!",
+                keywords: ["gula", "madu", "aren", "sorbitol", "sakarin", "aspartam", "sukralosa", "asesulfam", "siklamat", "pandan", "kunyit", "tartrazin", "rhodamin", "ponceau", "allura"],
+                minKeywords: 2,
+                hiddenAnswer: "Bahan alami: Gula pasir/sukrosa, madu, gula aren (pemanis); daun pandan, kunyit (pewarna). Bahan buatan: Sakarin, aspartam, sorbitol, siklamat (pemanis); Tartrazin, Allura red, Rhodamin B (pewarna)."
+            },
+            {
+                id: "q7",
+                type: "essay",
+                question: "Aktivitas: Tuliskan manfaat dan dampak zat aditif dari jawaban sebelumnya bagi kesehatan maupun secara sosial (jika ada)!",
+                keywords: ["menarik", "menggugah", "selera", "manis", "praktis", "diabetes", "obesitas", "kanker", "marah", "gelisah", "tidur", "kardiovaskular"],
+                minKeywords: 2,
+                hiddenAnswer: "Manfaat: Menambah rasa manis, membuat makanan terlihat lebih menarik/menggugah selera, praktis, mengembalikan warna asli. Dampak kesehatan: Diabetes, obesitas, kanker (jika menggunakan pewarna terlarang), dan gangguan tidur/gelisah pada anak (karena tartrazin)."
+            }
+        ];
+
+        let allSubmissions = []; // Cache data dari Google Sheet
+
+        // Inisialisasi Kuis saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+            renderQuiz();
+            // Cek lokal apakah user sudah pernah submit di browser ini (sebagai pertahanan pertama)
+            const localSubmit = localStorage.getItem('eduAditif_submitted');
+            if(localSubmit) {
+                disableFormAndShowMessage();
+            }
+        });
+
+        // Tab Switching
+        function switchTab(tabId) {
+            const vMateri = document.getElementById('viewMateri');
+            const vNilai = document.getElementById('viewNilai');
+            const bMateri = document.getElementById('btnTabMateri');
+            const bNilai = document.getElementById('btnTabNilai');
+
+            if(tabId === 'materi') {
+                vMateri.classList.remove('hidden');
+                vNilai.classList.add('hidden');
+                bMateri.className = "tab-active px-3 py-4 transition duration-300";
+                bNilai.className = "tab-inactive px-3 py-4 transition duration-300";
+            } else {
+                vMateri.classList.add('hidden');
+                vNilai.classList.remove('hidden');
+                bMateri.className = "tab-inactive px-3 py-4 transition duration-300";
+                bNilai.className = "tab-active px-3 py-4 transition duration-300";
+                fetchDataNilai(); // Load data when opening tab
+            }
+        }
+
+        // Render form soal
+        function renderQuiz() {
+            const container = document.getElementById('quizContainer');
+            let html = '';
+            
+            quizData.forEach((q, index) => {
+                html += `
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition">
+                        <p class="font-semibold text-gray-800 mb-4 text-base">${index + 1}. ${q.question}</p>
+                        <div class="space-y-3">
+                `;
+                
+                if (!q.type || q.type === 'mcq') {
+                    q.options.forEach((opt) => {
+                        html += `
+                                <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-light hover:border-primary transition bg-white">
+                                    <input type="radio" name="${q.id}" value="${opt}" required class="w-4 h-4 text-primary bg-gray-100 border-gray-300 focus:ring-primary">
+                                    <span class="ml-3 text-sm font-medium text-gray-700">${opt}</span>
+                                </label>
+                        `;
+                    });
+                } else if (q.type === 'essay') {
+                    html += `
+                        <textarea id="${q.id}" required rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition" placeholder="Ketik jawaban Anda di sini..."></textarea>
+                    `;
+                }
+                
+                // Elemen Kunci Jawaban (Disembunyikan pada awalnya, muncul setelah submit)
+                html += `
+                        </div>
+                        <div id="key-${q.id}" class="hidden mt-4 p-4 bg-green-50 border-l-4 border-green-500 rounded-r-lg">
+                            <p class="text-sm text-green-800 font-bold mb-1"><i class="fas fa-key mr-1"></i> Kunci Jawaban Ideal:</p>
+                            <p class="text-sm text-green-700 leading-relaxed">${q.type === 'essay' ? q.hiddenAnswer : q.answer}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        async function submitForm(event) {
+            event.preventDefault();
+            
+            // 1. Validasi perlindungan ganda (Local Storage)
+            if(localStorage.getItem('eduAditif_submitted')) {
+                Swal.fire('Perhatian!', 'Anda sudah pernah mengirimkan jawaban dari perangkat ini.', 'warning');
+                return;
+            }
+
+            const nama = document.getElementById('nama').value.trim();
+            const kelas = document.getElementById('kelas').value;
+
+            if(!nama || !kelas) {
+                Swal.fire('Peringatan', 'Harap isi nama dan pilih kelas dengan benar.', 'warning');
+                return;
+            }
+
+            // 2. Validasi perlindungan ganda (Dari data server yang sudah diambil)
+            const isDuplicate = allSubmissions.some(sub => sub.nama && sub.nama.toLowerCase() === nama.toLowerCase() && sub.kelas === kelas);
+            if(isDuplicate) {
+                Swal.fire('Ditolak!', `Siswa bernama ${nama} di ${kelas} sudah tercatat mengirimkan formulir. Pengiriman ganda tidak diizinkan.`, 'error');
+                return;
+            }
+
+            // 3. Kalkulasi Nilai Otomatis (MCQ & Deteksi Keyword Esai)
+            let earnedPoints = 0;
+            const maxPoints = quizData.length;
+
+            quizData.forEach(q => {
+                if (!q.type || q.type === 'mcq') {
+                    const selected = document.querySelector(`input[name="${q.id}"]:checked`);
+                    if(selected && selected.value === q.answer) {
+                        earnedPoints += 1; // Poin penuh pilihan ganda
+                    }
+                } else if (q.type === 'essay') {
+                    const answerText = document.getElementById(q.id).value.toLowerCase();
+                    let matchCount = 0;
+                    q.keywords.forEach(kw => {
+                        if(answerText.includes(kw.toLowerCase())) matchCount++;
+                    });
+                    
+                    if (matchCount >= q.minKeywords) {
+                        earnedPoints += 1; // Poin penuh esai
+                    } else if (matchCount > 0) {
+                        earnedPoints += 0.5; // Poin setengah jika hanya menyebutkan sebagian/satu
+                    }
+                }
+                
+                // Tampilkan Kunci Jawaban setelah murid submit
+                const keyElement = document.getElementById(`key-${q.id}`);
+                if(keyElement) keyElement.classList.remove('hidden');
+            });
+
+            // Skala 0 - 100
+            const nilai = Math.round((earnedPoints / maxPoints) * 100);
+
+            setLoadingState(true);
+
+            const payload = {
+                id: "ID-" + Date.now(),
+                nama: nama,
+                kelas: kelas,
+                timestamp: new Date().toISOString(),
+                score: nilai,
+                chainDetails: "Mengerjakan Kuis Evaluasi Zat Aditif Bagian 2",
+                targetSheet: "LKPD2_Zat Aditif" // <--- TAMBAHKAN BARIS INI (Jangan lupa koma di baris sebelumnya)
+            };
+
+            try {
+                // Gunakan text/plain untuk mengirim JSON demi menghindari pemblokiran CORS Preflight (OPTIONS) di GAS
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8',
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                // Sukses
+                localStorage.setItem('eduAditif_submitted', 'true');
+                Swal.fire({
+                    title: 'Berhasil!',
+                    text: `Jawaban berhasil dikirim. Nilai Anda: ${nilai}`,
+                    icon: 'success',
+                    confirmButtonColor: '#FF7F50'
+                });
+                
+                disableFormAndShowMessage();
+                
+                // Tambahkan langsung ke data lokal agar tabel langsung update
+                allSubmissions.push(payload);
+                filterAndSortTable();
+
+            } catch (error) {
+                console.error('Error saat submit:', error);
+                // Jika terjadi CORS error/network issue tapi data sebenarnya masuk
+                Swal.fire('Informasi', 'Permintaan terkirim, namun sistem mendeteksi kendala koneksi. Cek di daftar nilai secara berkala.', 'info');
+            } finally {
+                setLoadingState(false);
+            }
+        }
+
+        async function fetchDataNilai(isSilent = false) {
+            const loader = document.getElementById('tableLoader');
+            if(!isSilent) loader.classList.remove('hidden');
+            
+            try {
+                // TAMBAHKAN &sheet=LKPD2_Zat Aditif PADA BARIS DI BAWAH INI
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=read&sheet=LKPD2_Zat Aditif`);
+                const result = await response.json();
+                
+                // Mendukung berbagai macam format kembalian Apps Script
+                if(result.status === 'success' && result.data) {
+                    allSubmissions = result.data;
+                } else if(Array.isArray(result)) {
+                    allSubmissions = result;
+                } else if (result.data) {
+                    allSubmissions = result.data;
+                }
+                
+                filterAndSortTable();
+            } catch (error) {
+                console.error('Gagal menarik data dari server:', error);
+                if(!isSilent) {
+                   // Diam saja jika ini fetch background awal.
+                   // Jika gagal, data lokal (kosong) akan otomatis masuk block empty state.
+                }
+            } finally {
+                loader.classList.add('hidden');
+            }
+        }
+
+        function filterAndSortTable() {
+            const searchTxt = document.getElementById('searchInput').value.toLowerCase();
+            const filterKls = document.getElementById('filterKelas').value;
+            const sortOpt = document.getElementById('sortOption').value;
+
+            // Filter
+            let filtered = allSubmissions.filter(item => {
+                const nama = (item.nama || '').toLowerCase();
+                const matchName = nama.includes(searchTxt);
+                const matchClass = filterKls === 'all' || item.kelas === filterKls;
+                // Hilangkan header baris dari GSheet (jika tidak sengaja terambil)
+                const isNotHeader = nama !== 'nama' && nama !== 'nama siswa'; 
+                return matchName && matchClass && isNotHeader;
+            });
+
+            // Sort
+            filtered.sort((a, b) => {
+                if(sortOpt === 'terbaru') {
+                    return new Date(b.timestamp || b.waktu || 0) - new Date(a.timestamp || a.waktu || 0);
+                } else if (sortOpt === 'nilai_tertinggi') {
+                    return (b.score || b.nilai || 0) - (a.score || a.nilai || 0);
+                } else if (sortOpt === 'abjad_az') {
+                    return (a.nama || '').localeCompare(b.nama || '');
+                } else if (sortOpt === 'abjad_za') {
+                    return (b.nama || '').localeCompare(a.nama || '');
+                }
+                return 0;
+            });
+
+            renderTable(filtered);
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('nilaiTableBody');
+            const empty = document.getElementById('emptyState');
+            
+            tbody.innerHTML = '';
+            
+            if(data.length === 0) {
+                empty.classList.remove('hidden');
+            } else {
+                empty.classList.add('hidden');
+                data.forEach((item, index) => {
+                    const timeRaw = item.timestamp || item.waktu;
+                    const dateStr = timeRaw ? new Date(timeRaw).toLocaleString('id-ID') : '-';
+                    const nilai = parseInt(item.score || item.nilai) || 0;
+                    
+                    tbody.innerHTML += `
+                        <tr class="bg-white border-b hover:bg-light transition">
+                            <td class="px-6 py-4">${index + 1}</td>
+                            <td class="px-6 py-4 font-semibold text-gray-800">${item.nama || '-'}</td>
+                            <td class="px-6 py-4 text-gray-600">${item.kelas || '-'}</td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="px-3 py-1 rounded-full text-xs font-bold ${nilai >= 70 ? 'bg-secondary/20 text-green-700' : 'bg-red-100 text-red-600'}">
+                                    ${nilai}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-xs text-gray-500">${dateStr}</td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        function downloadExcel() {
+            if(allSubmissions.length === 0) {
+                Swal.fire('Pemberitahuan', 'Belum ada data nilai untuk diunduh', 'info');
+                return;
+            }
+            
+            // Format ulang untuk Excel
+            const excelData = allSubmissions.map((item, index) => ({
+                'No': index + 1,
+                'Nama Lengkap': item.nama,
+                'Kelas': item.kelas,
+                'Nilai': parseInt(item.score || item.nilai) || 0,
+                'Waktu Pengiriman': item.timestamp || item.waktu || '-'
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(excelData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Daftar Nilai");
+            
+            XLSX.writeFile(workbook, "Nilai_LMS_Zat_Aditif.xlsx");
+        }
+
+        function setLoadingState(isLoading) {
+            const btn = document.getElementById('submitBtn');
+            const text = document.getElementById('btnText');
+            const icon = document.getElementById('btnIcon');
+            const loader = document.getElementById('btnLoader');
+
+            if(isLoading) {
+                btn.disabled = true;
+                btn.classList.add('opacity-80', 'cursor-not-allowed');
+                text.textContent = 'Memproses...';
+                icon.classList.add('hidden');
+                loader.classList.remove('hidden');
+            } else {
+                btn.disabled = false;
+                btn.classList.remove('opacity-80', 'cursor-not-allowed');
+                text.textContent = 'Kirim Jawaban';
+                icon.classList.remove('hidden');
+                loader.classList.add('hidden');
+            }
+        }
+
+        function disableFormAndShowMessage() {
+            const form = document.getElementById('quizForm');
+            const inputs = form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => input.disabled = true);
+            
+            const btn = document.getElementById('submitBtn');
+            btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Formulir Telah Dikerjakan';
+            btn.classList.remove('bg-primary', 'hover:bg-orange-600');
+            btn.classList.add('bg-gray-400', 'cursor-not-allowed');
+            btn.disabled = true;
+        }
+
+        // Jalankan pengambilan data secara sembunyi-sembunyi di awal 
+        // untuk mengumpulkan database nama guna menghindari pengiriman ganda di sesi/browser yang berbeda
+        window.addEventListener('load', () => {
+            fetchDataNilai(true);
+        });
+
+    </script>
+</body>
+</html>
