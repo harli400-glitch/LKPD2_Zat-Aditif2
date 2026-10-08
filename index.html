@@ -389,14 +389,11 @@
 
         let allSubmissions = []; // Cache data dari Google Sheet
 
+        
         // Inisialisasi Kuis saat halaman dimuat
         document.addEventListener('DOMContentLoaded', () => {
             renderQuiz();
-            // Cek lokal apakah user sudah pernah submit di browser ini (sebagai pertahanan pertama)
-            const localSubmit = localStorage.getItem('eduAditif_submitted');
-            if(localSubmit) {
-                disableFormAndShowMessage();
-            }
+            // Pengecekan local storage dihapus agar perangkat yang sama bisa dipakai lagi
         });
 
         // Tab Switching
@@ -464,12 +461,7 @@
         async function submitForm(event) {
             event.preventDefault();
             
-            // 1. Validasi perlindungan ganda (Local Storage)
-            if(localStorage.getItem('eduAditif_submitted')) {
-                Swal.fire('Perhatian!', 'Anda sudah pernah mengirimkan jawaban dari perangkat ini.', 'warning');
-                return;
-            }
-
+            // Validasi Local Storage dihapus. Langsung masuk ke pengecekan nama & kelas.
             const nama = document.getElementById('nama').value.trim();
             const kelas = document.getElementById('kelas').value;
 
@@ -478,12 +470,13 @@
                 return;
             }
 
-            // 2. Validasi perlindungan ganda (Dari data server yang sudah diambil)
+            // 2. Validasi perlindungan (Dari data server yang sudah diambil)
             const isDuplicate = allSubmissions.some(sub => sub.nama && sub.nama.toLowerCase() === nama.toLowerCase() && sub.kelas === kelas);
             if(isDuplicate) {
                 Swal.fire('Ditolak!', `Siswa bernama ${nama} di ${kelas} sudah tercatat mengirimkan formulir. Pengiriman ganda tidak diizinkan.`, 'error');
                 return;
             }
+            // ... (kode berlanjut ke kalkulasi nilai)
 
             // 3. Kalkulasi Nilai Otomatis (MCQ & Deteksi Keyword Esai)
             let earnedPoints = 0;
@@ -540,19 +533,25 @@
                 });
 
                 // Sukses
-                localStorage.setItem('eduAditif_submitted', 'true');
-                Swal.fire({
+               Swal.fire({
                     title: 'Berhasil!',
                     text: `Jawaban berhasil dikirim. Nilai Anda: ${nilai}`,
                     icon: 'success',
                     confirmButtonColor: '#FF7F50'
                 });
                 
-                disableFormAndShowMessage();
-                
                 // Tambahkan langsung ke data lokal agar tabel langsung update
                 allSubmissions.push(payload);
                 filterAndSortTable();
+
+                // Reset formulir untuk siswa berikutnya
+                document.getElementById('quizForm').reset();
+                
+                // Sembunyikan kembali kunci jawaban
+                quizData.forEach(q => {
+                    const keyElement = document.getElementById(`key-${q.id}`);
+                    if(keyElement) keyElement.classList.add('hidden');
+                });
 
             } catch (error) {
                 console.error('Error saat submit:', error);
